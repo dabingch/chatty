@@ -5,9 +5,9 @@ import { useUser } from "@auth0/nextjs-auth0/client";
 import { getSession } from "@auth0/nextjs-auth0";
 
 export const getServerSideProps = async (ctx) => {
-  const { user } = await getSession(ctx.req, ctx.res);
+  const session = await getSession(ctx.req, ctx.res);
 
-  if (!user) {
+  if (!session) {
     return {
       props: {},
     };
@@ -40,22 +40,15 @@ export default function Home() {
         <div>
           {!user && (
             <>
-              <Link
-                href="/api/auth/login"
-                className="rounded-md bg-emerald-500 px-4 py-2 text-white hover:bg-emerald-600"
-              >
+              <Link href="/api/auth/login" className="btn">
                 Login
               </Link>
-              <Link
-                href="/api/auth/signup"
-                className="rounded-md bg-emerald-500 px-4 py-2 text-white hover:bg-emerald-600"
-              >
+              <Link href="/api/auth/signup" className="btn">
                 Signup
               </Link>
             </>
           )}
         </div>
-        <Link href="/api/auth/logout">Logout</Link>
       </div>
     </div>
   );
