@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+import { ReactMarkdown } from "react-markdown/lib/react-markdown";
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRobot } from "@fortawesome/free-solid-svg-icons";
@@ -29,7 +30,9 @@ const Message = ({ role, content }) => {
           </div>
         )}
       </div>
-      <div>{content}</div>
+      <div className="prose prose-invert lg:prose-lg">
+        <ReactMarkdown>{content}</ReactMarkdown>
+      </div>
     </div>
   );
 };
