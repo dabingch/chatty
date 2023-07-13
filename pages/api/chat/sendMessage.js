@@ -10,6 +10,21 @@ export default async function handler(req, res) {
 
     let chatId = chatIdFromParam;
 
+    if (
+      !message &&
+      typeof message !== "string" &&
+      message.trim().length > 200
+    ) {
+      return new Response(
+        {
+          message: "Message must be a string and less than 200 characters",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
     const initialMessage = {
       role: "system",
       content:
@@ -118,6 +133,13 @@ export default async function handler(req, res) {
 
     return new Response(stream);
   } catch (error) {
-    console.log(error);
+    return new Response(
+      {
+        message: "An error occurred in send message",
+      },
+      {
+        status: 500,
+      }
+    );
   }
 }
