@@ -10,9 +10,39 @@ export default async function handler(req, res) {
 
     const { chatId, role, content } = req.body;
 
+    let objectId
+    try {
+      objectId = new ObjectId(chatId);
+    } catch (error) {
+      res.status(400).json({ message: 'Invalid chat ID'})
+      return
+    }
+
+    if (
+      !content &&
+      typeof content !== "string" &&
+      (role === 'user' && content.trim().length > 200) || (role === 'assistant' && content.trim().length > 100000)
+    ) {
+      res.status(400).json(
+        {
+          message: "Message must be a string and less than 200 characters",
+        },
+       
+      );
+      return
+    }
+
+    if (role !== 'user' && role !== 'assistant') {
+      res.status(400).json({
+        message: "Role must be either user or assistant",
+      })
+      return
+
+    }
+
     const chat = await db.collection("chats").findOneAndUpdate(
       {
-        _id: new ObjectId(chatId),
+        _id: objectId,
         userId: user.sub,
       },
       {

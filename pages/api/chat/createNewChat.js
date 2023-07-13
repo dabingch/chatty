@@ -11,6 +11,19 @@ export default async function handler(req, res) {
     }
 
     const { message } = req.body;
+    if (
+      !message &&
+      typeof message !== "string" &&
+      message.trim().length > 200
+    ) {
+       res.status(400).json(
+        {
+          message: "Message must be a string and less than 200 characters",
+        },
+       );
+        return
+    }
+
     const newUserMessage = {
       role: "user",
       content: message,
@@ -31,6 +44,5 @@ export default async function handler(req, res) {
     });
   } catch (error) {
     res.status(500).json({ message: "Error creating chat" });
-    console.log("ERROR", error);
   }
 }
