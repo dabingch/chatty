@@ -2,11 +2,14 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 
+import clientPromise from "lib/mongodb";
+import { ObjectId } from "mongodb";
+import { getSession } from "@auth0/nextjs-auth0";
 import { streamReader } from "openai-edge-stream";
 import { v4 as uuid } from "uuid";
 import { ChatSidebar, Message } from "components";
 
-export default function ChatPage({ chatId }) {
+export default function ChatPage({ chatId, messages = [], title }) {
   const [newChatId, setNewChatId] = useState(null);
   const [incomingMessage, setIncomingMessage] = useState("");
   const [messageText, setMessageText] = useState("");
@@ -14,6 +17,11 @@ export default function ChatPage({ chatId }) {
   const [isGeneratingResponse, setIsGeneratingResponse] = useState(false);
 
   const router = useRouter();
+
+  useEffect(() => {
+    setNewChatMessages([]);
+    setNewChatId(null);
+  }, [chatId]);
 
   useEffect(() => {
     if (!isGeneratingResponse && newChatId) {
@@ -63,8 +71,11 @@ export default function ChatPage({ chatId }) {
       }
     });
 
+    setIncomingMessage("");
     setIsGeneratingResponse(false);
   };
+
+  const allMessages = [...messages, ...newChatMessages];
 
   return (
     <div>
@@ -75,7 +86,7 @@ export default function ChatPage({ chatId }) {
         <ChatSidebar chatId={chatId} />
         <div className="flex flex-col overflow-hidden bg-gray-700">
           <div className="flex-1 overflow-scroll text-white">
-            {newChatMessages.map((message) => (
+            {allMessages.map((message) => (
               <Message
                 key={message._id}
                 role={message.role}
@@ -111,9 +122,28 @@ export default function ChatPage({ chatId }) {
 export const getServerSideProps = async (context) => {
   const chatId = context.params?.chatId?.[0] || null;
 
+  if (chatId) {
+    const { user } = await getSession(context.req, context.res);
+    const client = await clientPromise;
+    const db = await client.db("chatty");
+    const chat = await db.collection("chats").findOne({
+      userId: user.sub,
+      _id: new ObjectId(chatId),
+    });
+
+    return {
+      props: {
+        chatId,
+        title: chat.title,
+        messages: chat.messages.map((message) => ({
+          ...message,
+          _id: uuid(),
+        })),
+      },
+    };
+  }
+
   return {
-    props: {
-      chatId,
-    },
+    props: {},
   };
 };
