@@ -7,7 +7,7 @@ import {
   faRightFromBracket,
 } from "@fortawesome/free-solid-svg-icons";
 
-const ChatSidebar = () => {
+const ChatSidebar = ({ chatId }) => {
   const [chatList, setChatList] = useState([]);
 
   useEffect(() => {
@@ -23,7 +23,7 @@ const ChatSidebar = () => {
     };
 
     loadChatList();
-  }, []);
+  }, [chatId]);
 
   return (
     <div className="flex flex-col overflow-hidden bg-gray-900 text-white">
@@ -36,7 +36,9 @@ const ChatSidebar = () => {
       <div className="flex-1 overflow-auto bg-gray-950">
         {chatList.map((chat) => (
           <Link
-            className="side-menu-item"
+            className={`side-menu-item ${
+              chatId === chat._id ? "bg-gray-700 hover:bg-gray-700" : ""
+            }`}
             key={chat._id}
             href={`/chat/${chat._id}`}
           >

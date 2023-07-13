@@ -1,15 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import Head from "next/head";
+
 import { streamReader } from "openai-edge-stream";
 import { v4 as uuid } from "uuid";
-
 import { ChatSidebar, Message } from "components";
 
-export default function ChatPage() {
+export default function ChatPage({ chatId }) {
+  const [newChatId, setNewChatId] = useState(null);
   const [incomingMessage, setIncomingMessage] = useState("");
   const [messageText, setMessageText] = useState("");
   const [newChatMessages, setNewChatMessages] = useState([]);
   const [isGeneratingResponse, setIsGeneratingResponse] = useState(false);
+
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isGeneratingResponse && newChatId) {
+      setNewChatId(null);
+      router.replace(`/chat/${newChatId}`);
+    }
+  }, [newChatId, isGeneratingResponse, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,7 +56,11 @@ export default function ChatPage() {
 
     const reader = data.getReader();
     await streamReader(reader, (message) => {
-      setIncomingMessage((prevMessage) => `${prevMessage}${message.content}`);
+      if (message.event === "newChatId") {
+        setNewChatId(message.content);
+      } else {
+        setIncomingMessage((prevMessage) => `${prevMessage}${message.content}`);
+      }
     });
 
     setIsGeneratingResponse(false);
@@ -57,7 +72,7 @@ export default function ChatPage() {
         <title>New Chat</title>
       </Head>
       <div className="grid h-screen grid-cols-[260px_1fr]">
-        <ChatSidebar />
+        <ChatSidebar chatId={chatId} />
         <div className="flex flex-col overflow-hidden bg-gray-700">
           <div className="flex-1 overflow-scroll text-white">
             {newChatMessages.map((message) => (
@@ -92,3 +107,13 @@ export default function ChatPage() {
     </div>
   );
 }
+
+export const getServerSideProps = async (context) => {
+  const chatId = context.params?.chatId?.[0] || null;
+
+  return {
+    props: {
+      chatId,
+    },
+  };
+};
