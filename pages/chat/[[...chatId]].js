@@ -8,6 +8,8 @@ import { getSession } from "@auth0/nextjs-auth0";
 import { streamReader } from "openai-edge-stream";
 import { v4 as uuid } from "uuid";
 import { ChatSidebar, Message } from "components";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faRobot } from "@fortawesome/free-solid-svg-icons";
 
 export default function ChatPage({ chatId, messages = [], title }) {
   const [newChatId, setNewChatId] = useState(null);
@@ -111,24 +113,37 @@ export default function ChatPage({ chatId, messages = [], title }) {
         <ChatSidebar chatId={chatId} />
         <div className="flex flex-col overflow-hidden bg-gray-700">
           <div className="flex flex-1 flex-col-reverse overflow-scroll text-white">
-            <div className="mb-auto">
-              {allMessages.map((message) => (
-                <Message
-                  key={message._id}
-                  role={message.role}
-                  content={message.content}
+            {!allMessages.length && !incomingMessage && (
+              <div className="m-auto flex flex-col items-center justify-center gap-2 text-center">
+                <FontAwesomeIcon
+                  icon={faRobot}
+                  className="text-6xl text-emerald-200"
                 />
-              ))}
-              {incomingMessage && !hasChangedRoute && (
-                <Message role="assistant" content={incomingMessage} />
-              )}
-              {incomingMessage && hasChangedRoute && (
-                <Message
-                  role="notice"
-                  content="Only one message is allowed at one time, Please allow other response to complete before sending another message. This will be disappeared after the response completes."
-                />
-              )}
-            </div>
+                <h1 className="font-body text-4xl text-white/50">
+                  Ask me a question!
+                </h1>
+              </div>
+            )}
+            {allMessages.length > 0 && (
+              <div className="mb-auto">
+                {allMessages.map((message) => (
+                  <Message
+                    key={message._id}
+                    role={message.role}
+                    content={message.content}
+                  />
+                ))}
+                {incomingMessage && !hasChangedRoute && (
+                  <Message role="assistant" content={incomingMessage} />
+                )}
+                {incomingMessage && hasChangedRoute && (
+                  <Message
+                    role="notice"
+                    content="Only one message is allowed at one time, Please allow other response to complete before sending another message. This will be disappeared after the response completes."
+                  />
+                )}
+              </div>
+            )}
           </div>
 
           <footer className="bg-gray-800 p-10">
@@ -156,13 +171,19 @@ export const getServerSideProps = async (context) => {
   const chatId = context.params?.chatId?.[0] || null;
 
   if (chatId) {
-    const { user } = await getSession(context.req, context.res);
-    const client = await clientPromise;
-    const db = await client.db("chatty");
-    const chat = await db.collection("chats").findOne({
-      userId: user.sub,
-      _id: new ObjectId(chatId),
-    });
+    try {
+      const { user } = await getSession(context.req, context.res);
+      const client = await clientPromise;
+      const db = await client.db("chatty");
+      const chat = await db.collection("chats").findOne({
+        userId: user.sub,
+        _id: new ObjectId(chatId),
+      });
+    } catch (error) {
+      return {
+        notFound: true,
+      };
+    }
 
     return {
       props: {
