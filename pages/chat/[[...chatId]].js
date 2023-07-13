@@ -179,22 +179,22 @@ export const getServerSideProps = async (context) => {
         userId: user.sub,
         _id: new ObjectId(chatId),
       });
+
+      return {
+        props: {
+          chatId,
+          title: chat.title,
+          messages: chat.messages.map((message) => ({
+            ...message,
+            _id: uuid(),
+          })),
+        },
+      };
     } catch (error) {
       return {
         notFound: true,
       };
     }
-
-    return {
-      props: {
-        chatId,
-        title: chat.title,
-        messages: chat.messages.map((message) => ({
-          ...message,
-          _id: uuid(),
-        })),
-      },
-    };
   }
 
   return {
