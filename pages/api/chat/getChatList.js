@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   try {
     const { user } = await getSession(req, res);
     const client = await clientPromise;
-    const db = await client.db("chatty");
+    const db =  client.db("chatty");
     const chats = await db
       .collection("chats")
       .find(
