@@ -16,8 +16,11 @@ export default function ChatPage({ chatId, messages = [], title }) {
   const [newChatMessages, setNewChatMessages] = useState([]);
   const [isGeneratingResponse, setIsGeneratingResponse] = useState(false);
   const [fullMessage, setFullMessage] = useState("");
+  const [originalChatId, setOriginalChatId] = useState(chatId);
 
   const router = useRouter();
+
+  const hasChangedRoute = originalChatId !== chatId;
 
   // When route chanegs, clear the new chat
   useEffect(() => {
@@ -27,7 +30,7 @@ export default function ChatPage({ chatId, messages = [], title }) {
 
   // Save the newly streamed message to the messages
   useEffect(() => {
-    if (!isGeneratingResponse && fullMessage) {
+    if (!hasChangedRoute && !isGeneratingResponse && fullMessage) {
       setNewChatMessages((prev) => [
         ...prev,
         {
@@ -38,7 +41,7 @@ export default function ChatPage({ chatId, messages = [], title }) {
       ]);
       setFullMessage("");
     }
-  }, [isGeneratingResponse, fullMessage]);
+  }, [isGeneratingResponse, fullMessage, hasChangedRoute]);
 
   // If create a new chat, redirect to that chat page
   useEffect(() => {
@@ -51,6 +54,7 @@ export default function ChatPage({ chatId, messages = [], title }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    setOriginalChatId(chatId);
     setIsGeneratingResponse(true);
     setNewChatMessages((prevM) => {
       const newChatMessages = [
@@ -106,17 +110,25 @@ export default function ChatPage({ chatId, messages = [], title }) {
       <div className="grid h-screen grid-cols-[260px_1fr]">
         <ChatSidebar chatId={chatId} />
         <div className="flex flex-col overflow-hidden bg-gray-700">
-          <div className="flex-1 overflow-scroll text-white">
-            {allMessages.map((message) => (
-              <Message
-                key={message._id}
-                role={message.role}
-                content={message.content}
-              />
-            ))}
-            {incomingMessage && (
-              <Message role="assistant" content={incomingMessage} />
-            )}
+          <div className="flex flex-1 flex-col-reverse overflow-scroll text-white">
+            <div className="mb-auto">
+              {allMessages.map((message) => (
+                <Message
+                  key={message._id}
+                  role={message.role}
+                  content={message.content}
+                />
+              ))}
+              {incomingMessage && !hasChangedRoute && (
+                <Message role="assistant" content={incomingMessage} />
+              )}
+              {incomingMessage && hasChangedRoute && (
+                <Message
+                  role="notice"
+                  content="Only one message is allowed at one time, Please allow other response to complete before sending another message. This will be disappeared after the response completes."
+                />
+              )}
+            </div>
           </div>
 
           <footer className="bg-gray-800 p-10">

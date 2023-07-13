@@ -17,10 +17,11 @@ export default async function handler(req, res) {
     };
 
     let newChatId;
+    let chatMessages = [];
 
     // If chat id exists, add message to chat
     if (chatId) {
-      const resposne = await fetch(
+      const response = await fetch(
         `${req.headers.get("origin")}/api/chat/addMessageToChat`,
         {
           method: "PUT",
@@ -35,7 +36,11 @@ export default async function handler(req, res) {
           }),
         }
       );
+
+      const data = await response.json();
+      chatMessages = data.chat.messages || [];
     } else {
+      // New Messages
       const response = await fetch(
         `${req.headers.get("origin")}/api/chat/createNewChat`,
         {
@@ -53,7 +58,23 @@ export default async function handler(req, res) {
       const data = await response.json();
       chatId = data._id;
       newChatId = data._id;
+      chatMessages = data.messages || [];
     }
+
+    const messagesToInclude = [];
+    chatMessages.reverse();
+    let usedTokens = 0;
+    for (let chatMessage of chatMessages) {
+      const messageTokens = chatMessage.content.length / 4;
+      usedTokens += messageTokens;
+      if (usedTokens <= 2000) {
+        messagesToInclude.push(chatMessage);
+      } else {
+        break;
+      }
+    }
+
+    messagesToInclude.reverse();
 
     const stream = await OpenAIEdgeStream(
       "https://api.chatanywhere.com.cn/v1/chat/completions",
@@ -65,13 +86,7 @@ export default async function handler(req, res) {
         method: "POST",
         body: JSON.stringify({
           model: "gpt-3.5-turbo",
-          messages: [
-            initialMessage,
-            {
-              content: message,
-              role: "user",
-            },
-          ],
+          messages: [initialMessage, ...messagesToInclude],
           stream: true,
         }),
       },
