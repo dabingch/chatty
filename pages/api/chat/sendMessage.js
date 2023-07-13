@@ -6,7 +6,9 @@ export const config = {
 
 export default async function handler(req, res) {
   try {
-    const { message } = await req.json(); // equal to JSON.parse(req.body)
+    const { chatId: chatIdFromParam, message } = await req.json(); // equal to JSON.parse(req.body)
+
+    let chatId = chatIdFromParam;
 
     const initialMessage = {
       role: "system",
@@ -14,22 +16,44 @@ export default async function handler(req, res) {
         "Your name is 小饼. An incredibly intelligent and quick-thinking AI, that always replies with an enthusiastic and positive energy. Your were created by 大饼, Your response must be formatted as markdown",
     };
 
-    const response = await fetch(
-      `${req.headers.get("origin")}/api/chat/createNewChat`,
-      {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          cookie: req.headers.get("cookie"),
-        },
-        body: JSON.stringify({
-          message,
-        }),
-      }
-    );
+    let newChatId;
 
-    const data = await response.json();
-    const chatId = data._id;
+    // If chat id exists, add message to chat
+    if (chatId) {
+      const resposne = await fetch(
+        `${req.headers.get("origin")}/api/chat/addMessageToChat`,
+        {
+          method: "PUT",
+          headers: {
+            "content-type": "application/json",
+            cookie: req.headers.get("cookie"),
+          },
+          body: JSON.stringify({
+            chatId,
+            role: "user",
+            content: message,
+          }),
+        }
+      );
+    } else {
+      const response = await fetch(
+        `${req.headers.get("origin")}/api/chat/createNewChat`,
+        {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            cookie: req.headers.get("cookie"),
+          },
+          body: JSON.stringify({
+            message,
+          }),
+        }
+      );
+
+      const data = await response.json();
+      chatId = data._id;
+      newChatId = data._id;
+    }
 
     const stream = await OpenAIEdgeStream(
       "https://api.chatanywhere.com.cn/v1/chat/completions",
@@ -53,7 +77,9 @@ export default async function handler(req, res) {
       },
       {
         onBeforeStream: ({ emit }) => {
-          emit(chatId, "newChatId");
+          if (newChatId) {
+            emit(chatId, "newChatId");
+          }
         },
         onAfterStream: async ({ fullContent }) => {
           await fetch(
