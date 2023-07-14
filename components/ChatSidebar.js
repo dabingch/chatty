@@ -17,7 +17,7 @@ const ChatSidebar = ({ chatId }) => {
       });
 
       const data = await response.json();
-      console.log("GET CHAT LIST", data);
+      // console.log("GET CHAT LIST", data);
 
       setChatList(data?.chats || []);
     };
