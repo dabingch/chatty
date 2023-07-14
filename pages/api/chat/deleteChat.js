@@ -4,8 +4,6 @@ import { ObjectId } from "mongodb";
 
 export default async function handler(req, res) {
   try {
-    const { user } = await getSession(req, res);
-
     if (req.method !== "POST") {
       res.status(405).json({ message: "Method not allowed" });
       return;
@@ -17,8 +15,10 @@ export default async function handler(req, res) {
       return;
     }
 
+    const { user } = await getSession(req, res);
     const client = await clientPromise;
     const db = client.db("chatty");
+
     await db
       .collection("chats")
       .findOneAndDelete({ _id: new ObjectId(chatId), userId: user.sub });

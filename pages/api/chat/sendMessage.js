@@ -77,7 +77,9 @@ export default async function handler(req, res) {
     }
 
     const messagesToInclude = [];
-    chatMessages.reverse();
+    chatMessages.reverse(); // latest messages come first
+    // Check if the messages from user and robot exceed 2000 tokens
+    // Limit is 4000 tokens, about 1600 characters
     let usedTokens = 0;
     for (let chatMessage of chatMessages) {
       const messageTokens = chatMessage.content.length / 4;
@@ -107,6 +109,7 @@ export default async function handler(req, res) {
       },
       {
         onBeforeStream: ({ emit }) => {
+          // if it is new chat, send to client with a event named "newChatId"
           if (newChatId) {
             emit(chatId, "newChatId");
           }

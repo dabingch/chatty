@@ -4,10 +4,6 @@ import { ObjectId } from "mongodb";
 
 export default async function handler(req, res) {
   try {
-    const { user } = await getSession(req, res);
-    const client = await clientPromise;
-    const db = client.db("chatty");
-
     const { chatId, role, content } = req.body;
 
     let objectId;
@@ -38,6 +34,10 @@ export default async function handler(req, res) {
       return;
     }
 
+    const { user } = await getSession(req, res);
+    const client = await clientPromise;
+    const db = client.db("chatty");
+
     const chat = await db.collection("chats").findOneAndUpdate(
       {
         _id: objectId,
@@ -52,7 +52,7 @@ export default async function handler(req, res) {
         },
       },
       {
-        returnDocument: "after",
+        returnDocument: "after", // return the updated document
       }
     );
 

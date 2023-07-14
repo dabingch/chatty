@@ -92,11 +92,13 @@ export default function ChatPage({ chatId, messages = [], title }) {
 
     const data = response.body;
     if (!data) {
+      res.status(500).json({ message: "Error sending message to client" });
       return;
     }
 
-    // Stream to read the response from the robot
+    // Read the stream response from the robot
     const reader = data.getReader();
+    // concatenate the streamed response
     let content = "";
     await streamReader(reader, (message) => {
       if (message.event === "newChatId") {
