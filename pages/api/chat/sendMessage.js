@@ -92,7 +92,7 @@ export default async function handler(req, res) {
     messagesToInclude.reverse();
 
     const stream = await OpenAIEdgeStream(
-      "https://api.chatanywhere.com.cn/v1/chat/completions",
+      "https://api.chatanywhere.cn/v1/chat/completions",
       {
         headers: {
           "content-type": "application/json",
