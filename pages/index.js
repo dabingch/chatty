@@ -5,28 +5,13 @@ import { useUser } from "@auth0/nextjs-auth0/client";
 import { getSession } from "@auth0/nextjs-auth0";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRobot } from "@fortawesome/free-solid-svg-icons";
-
-export const getServerSideProps = async (ctx) => {
-  const session = await getSession(ctx.req, ctx.res);
-
-  if (!session) {
-    return {
-      props: {},
-    };
-  }
-
-  return {
-    redirect: {
-      destination: "/chat",
-    },
-  };
-};
+import { Loader } from "components";
 
 export default function Home() {
   const { isLoading, error, user } = useUser();
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <Loader />;
   }
 
   if (error) {
@@ -65,3 +50,19 @@ export default function Home() {
     </div>
   );
 }
+
+export const getServerSideProps = async (ctx) => {
+  const session = await getSession(ctx.req, ctx.res);
+
+  if (!session) {
+    return {
+      props: {},
+    };
+  }
+
+  return {
+    redirect: {
+      destination: "/chat",
+    },
+  };
+};

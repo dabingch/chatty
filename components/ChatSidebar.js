@@ -1,6 +1,5 @@
-import { useEffect, useState, Fragment } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/router";
 
 import DeleteChatIcons from "./DeleteChatIcons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
