@@ -12,25 +12,32 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRobot } from "@fortawesome/free-solid-svg-icons";
 
 export default function ChatPage({ chatId, messages = [], title }) {
+  // State for new chatId after generating a new chat
   const [newChatId, setNewChatId] = useState(null);
-  const [incomingMessage, setIncomingMessage] = useState("");
+  // State for checking if the route has changed
+  const [originalChatId, setOriginalChatId] = useState(chatId);
+  // State for the input message from user
   const [messageText, setMessageText] = useState("");
+  // State for incoming streaming message
+  // Used to show the stream message output from the robot
+  const [incomingMessage, setIncomingMessage] = useState("");
+  // State for full content of the one-time streaming message from robot
+  const [fullMessage, setFullMessage] = useState("");
+  // State for the new chat message from user
   const [newChatMessages, setNewChatMessages] = useState([]);
   const [isGeneratingResponse, setIsGeneratingResponse] = useState(false);
-  const [fullMessage, setFullMessage] = useState("");
-  const [originalChatId, setOriginalChatId] = useState(chatId);
 
   const router = useRouter();
 
   const hasChangedRoute = originalChatId !== chatId;
 
-  // When route chanegs, clear the new chat
+  // When route changes, clear the new chat
   useEffect(() => {
     setNewChatMessages([]);
     setNewChatId(null);
   }, [chatId]);
 
-  // Save the newly streamed message to the messages
+  // Save the newly streamed message to the messages after the full response is generated
   useEffect(() => {
     if (!hasChangedRoute && !isGeneratingResponse && fullMessage) {
       setNewChatMessages((prev) => [
@@ -49,7 +56,7 @@ export default function ChatPage({ chatId, messages = [], title }) {
   useEffect(() => {
     if (!isGeneratingResponse && newChatId) {
       setNewChatId(null);
-      router.replace(`/chat/${newChatId}`);
+      router.push(`/chat/${newChatId}`);
     }
   }, [newChatId, isGeneratingResponse, router]);
 
@@ -58,6 +65,7 @@ export default function ChatPage({ chatId, messages = [], title }) {
 
     setOriginalChatId(chatId);
     setIsGeneratingResponse(true);
+    // User send a message to the robot
     setNewChatMessages((prevM) => {
       const newChatMessages = [
         ...prevM,
@@ -73,6 +81,7 @@ export default function ChatPage({ chatId, messages = [], title }) {
 
     setMessageText("");
 
+    // Robot response to the user
     const response = await fetch("/api/chat/sendMessage", {
       method: "POST",
       headers: {
@@ -86,6 +95,7 @@ export default function ChatPage({ chatId, messages = [], title }) {
       return;
     }
 
+    // Stream to read the response from the robot
     const reader = data.getReader();
     let content = "";
     await streamReader(reader, (message) => {
@@ -102,6 +112,7 @@ export default function ChatPage({ chatId, messages = [], title }) {
     setIsGeneratingResponse(false);
   };
 
+  // All chat messages from the user and robot
   const allMessages = [...messages, ...newChatMessages];
 
   return (
@@ -168,8 +179,10 @@ export default function ChatPage({ chatId, messages = [], title }) {
 }
 
 export const getServerSideProps = async (context) => {
+  // Find the chatId from the URL or null in new chat
   const chatId = context.params?.chatId?.[0] || null;
 
+  // Get all messages from the current chatId
   if (chatId) {
     try {
       const { user } = await getSession(context.req, context.res);

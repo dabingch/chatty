@@ -13,10 +13,10 @@ import {
 const ChatSidebarItem = ({ chat, currentChatId: chatId, setChatList }) => {
   const router = useRouter();
 
-  const [isOpenConfirm, setIsOpenConfirm] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
   const handleDeleteChat = async (chatId) => {
-    const response = await fetch("/api/chat/deleteChat", {
+    await fetch("/api/chat/deleteChat", {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -26,11 +26,7 @@ const ChatSidebarItem = ({ chat, currentChatId: chatId, setChatList }) => {
       }),
     });
 
-    const data = await response.json();
-    // console.log("DELETE CHAT: ", data.message);
-
-    setIsOpenConfirm(false);
-
+    setShowConfirmDelete(false);
     setChatList((prev) => prev.filter((chat) => chat._id !== chatId));
 
     router.replace("/chat");
@@ -53,7 +49,7 @@ const ChatSidebarItem = ({ chat, currentChatId: chatId, setChatList }) => {
       >
         {chat.title}
       </span>
-      {isOpenConfirm ? (
+      {showConfirmDelete ? (
         <Fragment>
           <FontAwesomeIcon
             className="ml-auto text-green-400 hover:cursor-pointer"
@@ -63,14 +59,14 @@ const ChatSidebarItem = ({ chat, currentChatId: chatId, setChatList }) => {
           <FontAwesomeIcon
             className="text-red-500 hover:cursor-pointer"
             icon={faTimes}
-            onClick={() => setIsOpenConfirm(false)}
+            onClick={() => setShowConfirmDelete(false)}
           />
         </Fragment>
       ) : (
         <FontAwesomeIcon
           icon={faTrash}
           className="ml-auto text-white/50 hover:text-white"
-          onClick={() => setIsOpenConfirm(true)}
+          onClick={() => setShowConfirmDelete(true)}
         />
       )}
     </Link>
