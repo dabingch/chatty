@@ -10,7 +10,7 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 
-const DeleteChatIcons = ({ chat, currentChatId: chatId, setChatList }) => {
+const ChatSidebarItem = ({ chat, currentChatId: chatId, setChatList }) => {
   const router = useRouter();
 
   const [isOpenConfirm, setIsOpenConfirm] = useState(false);
@@ -77,4 +77,4 @@ const DeleteChatIcons = ({ chat, currentChatId: chatId, setChatList }) => {
   );
 };
 
-export default DeleteChatIcons;
+export default ChatSidebarItem;

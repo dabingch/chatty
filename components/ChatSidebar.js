@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-import DeleteChatIcons from "./DeleteChatIcons";
+import ChatSidebarItem from "./ChatSidebarItem";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 
@@ -15,7 +15,6 @@ const ChatSidebar = ({ chatId }) => {
       });
 
       const data = await response.json();
-      // console.log("GET CHAT LIST", data);
 
       setChatList(data?.chats || []);
     };
@@ -33,7 +32,7 @@ const ChatSidebar = ({ chatId }) => {
       </Link>
       <div className="flex-1 overflow-auto bg-gray-950">
         {chatList.map((chat) => (
-          <DeleteChatIcons
+          <ChatSidebarItem
             key={chat._id}
             chat={chat}
             currentChatId={chatId}
