@@ -79,7 +79,7 @@ export default async function handler(req, res) {
     const messagesToInclude = [];
     chatMessages.reverse(); // latest messages come first
     // Check if the messages from user and robot exceed 2000 tokens
-    // Limit is 4000 tokens, about 1600 characters
+    // Limit is 4000 tokens, about 16000 characters
     let usedTokens = 0;
     for (let chatMessage of chatMessages) {
       const messageTokens = chatMessage.content.length / 4;

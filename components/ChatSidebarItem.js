@@ -10,7 +10,12 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 
-const ChatSidebarItem = ({ chat, currentChatId: chatId, setChatList }) => {
+const ChatSidebarItem = ({
+  chat,
+  currentChatId: chatId,
+  setChatList,
+  isGeneratingResponse,
+}) => {
   const router = useRouter();
 
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
@@ -49,7 +54,7 @@ const ChatSidebarItem = ({ chat, currentChatId: chatId, setChatList }) => {
       >
         {chat.title}
       </span>
-      {showConfirmDelete ? (
+      {!isGeneratingResponse && showConfirmDelete ? (
         <Fragment>
           <FontAwesomeIcon
             className="ml-auto text-green-400 hover:cursor-pointer"

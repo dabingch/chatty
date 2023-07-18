@@ -5,7 +5,7 @@ import ChatSidebarItem from "./ChatSidebarItem";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 
-const ChatSidebar = ({ chatId }) => {
+const ChatSidebar = ({ chatId, isGeneratingResponse }) => {
   const [chatList, setChatList] = useState([]);
 
   useEffect(() => {
@@ -37,6 +37,7 @@ const ChatSidebar = ({ chatId }) => {
             chat={chat}
             currentChatId={chatId}
             setChatList={setChatList}
+            isGeneratingResponse={isGeneratingResponse}
           />
         ))}
       </div>

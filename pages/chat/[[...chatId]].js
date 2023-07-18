@@ -123,7 +123,10 @@ export default function ChatPage({ chatId, messages = [], title }) {
         <title>New Chat</title>
       </Head>
       <div className="grid h-screen grid-cols-[260px_1fr]">
-        <ChatSidebar chatId={chatId} />
+        <ChatSidebar
+          chatId={chatId}
+          isGeneratingResponse={isGeneratingResponse}
+        />
         <div className="flex flex-col overflow-hidden bg-gray-700">
           <div className="flex flex-1 flex-col-reverse overflow-scroll text-white">
             {!allMessages.length && !incomingMessage && (
