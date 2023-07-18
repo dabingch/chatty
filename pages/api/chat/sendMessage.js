@@ -1,5 +1,7 @@
 import { OpenAIEdgeStream } from "openai-edge-stream";
 
+// next.js config, to make the request timeout to 30 seconds
+// default is 10 seconds with the free plan
 export const config = {
   runtime: "edge",
 };
@@ -103,13 +105,13 @@ export default async function handler(req, res) {
         method: "POST",
         body: JSON.stringify({
           model: "gpt-3.5-turbo",
-          messages: [initialMessage, ...messagesToInclude],
-          stream: true,
+          messages: [initialMessage, ...messagesToInclude], // token limit in messages
+          stream: true, // stream message to make interface user-friendly
         }),
       },
       {
         onBeforeStream: ({ emit }) => {
-          // if it is new chat, send to client with a event named "newChatId"
+          // if it is a new chat, send a event to client named "newChatId"
           if (newChatId) {
             emit(chatId, "newChatId");
           }
